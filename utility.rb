@@ -27,7 +27,7 @@ class Optparse
         options.change_permision = write
       end      
 
-      opts.on("-c","--folder_to_check [folder]","which folder to scan") do |folder_to_check|
+      opts.on("-c","--folder_to_check [folder]","which folder to scan !!Full path without slash at the end!!") do |folder_to_check|
         options.folder_to_check = folder_to_check
       end
 
@@ -48,6 +48,11 @@ class Optparse
       opts.on("-f","--default_file [HEX]","set default mask for files") do |default_file|
         options.default_file = default_file
       end
+      
+      opts.separator ""
+      opts.separator "Typical usage"
+      opts.separator "\truby utility.rb -w true -c /var/www -p second -d 555 -f 444 -l /var/log/test.log"
+      
       
       opts.separator ""
       opts.separator "other options:"
