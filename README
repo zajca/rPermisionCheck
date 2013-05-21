@@ -8,10 +8,9 @@ Options
     -d, --default_directory [HEX]    set default mask for folders
     -f, --default_file [HEX]         set default mask for files
 
+Typical usage
+	ruby utility.rb -w true -c /var/www -p second -d 555 -f 444 -l /var/log/test.log
+
 other options:
     -h, --help                       Show this message
     -v, --version                    Show version
-    
-Typical usage:
-
-    ruby utility.rb -w true -c /var/www -p second -d 555 -f 444 -l "/var/log/test.log"
