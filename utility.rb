@@ -68,6 +68,10 @@ class Optparse
         puts OptionParser::Version.join('.')
         exit
       end
+      
+      opts.on_tail("")
+      opts.on_tail("© Martin Zajíc <zajca[at]zajca[dot]cz>")
+      
     end
 
     opt_parser.parse!(args)
@@ -103,20 +107,21 @@ class Checker
     @LEVEL = level
     @log_file = log
     begin
-      $logger = Logger.new(@log_file, 'daily')
+      $LOG = Logger.new(@log_file, 'daily')
     rescue Exception=>e
       puts "[FATAL ERROR] #{e}"
       exit
     end
-    $logger.info("***************")
-    $logger.info("NEW PROGRAM RUN")
-    $logger.info("***************")
-    $logger.info("ARGS:")
-    $logger.info("default permissions for files: #{@DEFAULT_PERMISSION_FILE}")
-    $logger.info("default permissions for folders: #{@DEFAULT_PERMISSION_FOLDER}")
-    $logger.info("change permission: #{@CHANGE_PERMISSION}")
-    $logger.info("directory to check: #{@DEFAULT_DIRECTORY}")
-    $logger.info("deep level check: #{@LEVEL}")
+    $LOG.level = Logger::DEBUG  
+    $LOG.info("***************")
+    $LOG.info("NEW PROGRAM RUN")
+    $LOG.info("***************")
+    $LOG.info("ARGS:")
+    $LOG.info("default permissions for files: #{@DEFAULT_PERMISSION_FILE}")
+    $LOG.info("default permissions for folders: #{@DEFAULT_PERMISSION_FOLDER}")
+    $LOG.info("change permission: #{@CHANGE_PERMISSION}")
+    $LOG.info("directory to check: #{@DEFAULT_DIRECTORY}")
+    $LOG.info("deep level check: #{@LEVEL}")
   end # method initialize
 
   def run
@@ -134,21 +139,21 @@ class Checker
     begin
         wr=`stat --format=%a #{dirPath}#{file}`.chomp
       rescue Exception=>e
-        $logger.fatal("external program thrown error")
-        $logger.fatal(e)
+        $LOG.fatal("external program thrown error")
+        $LOG.fatal(e)
         exit
       else
         if wr==permission
           return true
         else
-          $logger.warn("file #{dirPath}#{file} has #{wr} should be #{permission}")
+          $LOG.warn("file #{dirPath}#{file} has #{wr} should be #{permission}")
           if @CHANGE_PERMISSION
-            $logger.warn("Changing permission of file #{dirPath}#{file} from  #{wr} to #{permission}")
+            $LOG.warn("Changing permission of file #{dirPath}#{file} from  #{wr} to #{permission}")
             begin
               `chmod #{permission} #{dirPath}#{file}`
             rescue Exception=>e
-              $logger.fatal("external program thrown error")
-              $logger.fatal(e)
+              $LOG.fatal("external program thrown error")
+              $LOG.fatal(e)
               exit
             end
             return false
@@ -163,27 +168,27 @@ class Checker
       wr=`stat --format=%a #{dirPath}#{file}`.chomp
       wd=`stat --format=%F #{dirPath}#{file}`.chomp
     rescue Exception=>e
-        $logger.fatal("external program thrown error")
-        $logger.fatal(e)
+        $LOG.fatal("external program thrown error")
+        $LOG.fatal(e)
         exit
     else
       case wd
          when "directory" then default_permission = @DEFAULT_PERMISSION_FOLDER
          when "regular file" then default_permission = @DEFAULT_PERMISSION_FILE
-         else $logger.fatal("Invalid file type #{wd} #{dirPath}#{file}")
+         else $LOG.fatal("Invalid file type #{wd} #{dirPath}#{file}")
       end
   
       if wr==default_permission
         return true
       else
-        $logger.warn("file #{dirPath}#{file} has #{wr} should be #{default_permission}")
+        $LOG.warn("file #{dirPath}#{file} has #{wr} should be #{default_permission}")
         if @CHANGE_PERMISSION
-          $logger.warn("Changing permission of file #{dirPath}#{file} from  #{wr} to #{default_permission}")
+          $LOG.warn("Changing permission of file #{dirPath}#{file} from  #{wr} to #{default_permission}")
             begin
               `chmod #{default_permission} #{dirPath}#{file}`
             rescue Exception=>e
-              $logger.fatal("external program thrown error")
-              $logger.fatal(e)
+              $LOG.fatal("external program thrown error")
+              $LOG.fatal(e)
               exit
             end
           return false
@@ -194,13 +199,13 @@ class Checker
 
   #Testování souborů určených v souboru permission.json
   def checkFoldersPermisionFile(dirPath, json, fileHash)
-    $logger.info("Check of files in permission.json")
+    $LOG.info("Check of files in permission.json")
     json.each do |fileName, permission|
       begin
         wd=`stat --format=%F #{dirPath}#{fileName}`.chomp
        rescue Exception=>e
-        $logger.fatal("external program thrown error")
-        $logger.fatal(e)
+        $LOG.fatal("external program thrown error")
+        $LOG.fatal(e)
         exit
       else
         if wd=="directory"
@@ -229,19 +234,19 @@ class Checker
   def ifIsPermisionOK(fileName,permission,dirPath)
     if !isPermisionOK(fileName,permission,dirPath)
       if !isPermisionOK(fileName,permission,dirPath)
-        $logger.fatal("Can't chage permission of the file #{dirPath}#{fileName}")
+        $LOG.fatal("Can't chage permission of the file #{dirPath}#{fileName}")
       end
     end
   end # method ifIsPermisionOK
 
   #Testování souborů neuvedených v souboru permission.json
   def checkFoldersForDefaultPermision(dirPath, fileHash)
-    $logger.info("Check of files outside permission.json")
+    $LOG.info("Check of files outside permission.json")
     fileHash.each do |fileName, isChecked| 
       if !isChecked
         if !isPermisionOKDefault(fileName,dirPath)
           if !isPermisionOKDefault(fileName,dirPath)
-            $logger.fatal("Can't chage permission of the file #{dirPath}#{fileName}")
+            $LOG.fatal("Can't chage permission of the file #{dirPath}#{fileName}")
           end
         end
       end
@@ -267,8 +272,8 @@ class Checker
         #otevreni souboru nastaveni
         file = File.open("#{dirPath}permissions.json", &:read)
       rescue Exception=>e
-        $logger.fatal(e.message)
-        $logger.warn("Skiping folder #{dirPath}")
+        $LOG.fatal(e.message)
+        $LOG.warn("Skiping folder #{dirPath}")
       else
         json=JSON.parse(file)
         #rutina pro veškerou práci se souborem permissions.json
