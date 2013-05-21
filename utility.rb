@@ -215,9 +215,6 @@ class Checker
             end
           end
         else
-          $logger.info(fileName)
-          $logger.info(fileHash[fileName.to_s])
-          $logger.info(fileHash)
           if !fileHash[fileName]
             ifIsPermisionOK(fileName,permission,dirPath)
             fileHash["#{fileName}"]= true
