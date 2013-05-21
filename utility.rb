@@ -143,7 +143,7 @@ class Checker
         else
           $logger.warn("file #{dirPath}#{file} has #{wr} should be #{permission}")
           if @CHANGE_PERMISSION
-            $logger.warn("Changing permission of file #{dirPath}#{file} from  #{wr}")
+            $logger.warn("Changing permission of file #{dirPath}#{file} from  #{wr} to #{permission}")
             begin
               `chmod #{permission} #{dirPath}#{file}`
             rescue Exception=>e
@@ -213,8 +213,10 @@ class Checker
             fileHash["#{fileName}/#{f}"]= true
           end
         else
-          ifIsPermisionOK(fileName,permission,dirPath)
-          fileHash["#{fileName}"]= true
+          if !fileHash[fileName]
+            ifIsPermisionOK(fileName,permission,dirPath)
+            fileHash["#{fileName}"]= true
+          end
         end
       end
     end
