@@ -2,7 +2,7 @@ Usage: program [OPTIONS]
 
 Options
     -w, --write [bool]               1 => change permisions, 0 => log
-    -c, --folder_to_check [folder]   which folder to scan
+    -c, --folder_to_check [folder]   which folder to scan !!Full path without slash at the end!!
     -p, --look_at_level [level]      how deep to look for permision.json (only first => ./permision.json./, second => ./*/permision.json)
     -l, --log_file [file]            specifi log file
     -d, --default_directory [HEX]    set default mask for folders
@@ -11,8 +11,7 @@ Options
 other options:
     -h, --help                       Show this message
     -v, --version                    Show version
-
     
 Typical usage:
 
-    ruby utility.rb -w true -c /home/zajca/tmp/pria/Program -l first -d 555 -f 444 -l "/var/log/test.log"
+    ruby utility.rb -w true -c /var/www -p second -d 555 -f 444 -l "/var/log/test.log"
