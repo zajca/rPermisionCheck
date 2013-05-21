@@ -1,2 +1,6 @@
 --implemet level option
 --control input
+--make all argument mandatory
+
+BUGS:
+--can't check permission for folder/file with blank space in name
