@@ -132,64 +132,93 @@ class Checker
 
   #testování příznaku souborů určených v souboru permision.json
   def isPermisionOK(file,permision,dirPath)
-    wr=`stat --format=%a #{dirPath}#{file}`.chomp
-    if wr==permision
-      return true
-    else
-      $logger.fatal("file #{dirPath}#{file} has #{wr} should be #{permision}")
-      if @CHANGE_PERMISION
-        $logger.warn("Changing permision of file #{dirPath}#{file} from  #{wr}")
-        `chmod #{permision} #{dirPath}#{file}`
-        return false
-      end
+    begin
+        wr=`stat --format=%a #{dirPath}#{file}`.chomp
+      rescue Exception=>e
+        $logger.fatal("external program thrown error")
+        $logger.fatal(e)
+        exit
+      else
+        if wr==permision
+          return true
+        else
+          $logger.fatal("file #{dirPath}#{file} has #{wr} should be #{permision}")
+          if @CHANGE_PERMISION
+            $logger.warn("Changing permision of file #{dirPath}#{file} from  #{wr}")
+            begin
+              `chmod #{permision} #{dirPath}#{file}`
+            rescue Exception=>e
+              $logger.fatal("external program thrown error")
+              $logger.fatal(e)
+              exit
+            end
+            return false
+          end
+        end
     end
   end # method isPermisionOK
 
   #testování příznaku souborů neurčených v souboru permision.json
   def isPermisionOKDefault(file,dirPath)
-    wr=`stat --format=%a #{dirPath}#{file}`.chomp
-    wd=`stat --format=%F #{dirPath}#{file}`.chomp
-    
-    case wd
-       when "directory" then default_permision = @DEFAULT_PERMISION_FOLDER
-       when "regular file" then default_permision = @DEFAULT_PERMISION_FILE
-       else $logger.fatal("Invalid file type #{wd} #{dirPath}#{file}")
-    end
-
-    if wr==default_permision
-      return true
+    begin
+      wr=`stat --format=%a #{dirPath}#{file}`.chomp
+      wd=`stat --format=%F #{dirPath}#{file}`.chomp
+    rescue Exception=>e
+        $logger.fatal("external program thrown error")
+        $logger.fatal(e)
+        exit
     else
-      $logger.fatal("file #{dirPath}#{file} has #{wr} should be #{default_permision}")
-      if @CHANGE_PERMISION
-        $logger.warn("Changing permision of file #{dirPath}#{file} from  #{wr} to #{default_permision}")
-        `chmod #{default_permision} #{dirPath}#{file}`
-        return false
+      case wd
+         when "directory" then default_permision = @DEFAULT_PERMISION_FOLDER
+         when "regular file" then default_permision = @DEFAULT_PERMISION_FILE
+         else $logger.fatal("Invalid file type #{wd} #{dirPath}#{file}")
+      end
+  
+      if wr==default_permision
+        return true
+      else
+        $logger.fatal("file #{dirPath}#{file} has #{wr} should be #{default_permision}")
+        if @CHANGE_PERMISION
+          $logger.warn("Changing permision of file #{dirPath}#{file} from  #{wr} to #{default_permision}")
+            begin
+              `chmod #{default_permision} #{dirPath}#{file}`
+            rescue Exception=>e
+              $logger.fatal("external program thrown error")
+              $logger.fatal(e)
+              exit
+            end
+          return false
+        end
       end
     end
-
   end # method isPermisionOKDefault
 
   #Testování souborů určených v souboru permision.json
   def checkFoldersPermisionFile(dirPath, json, fileHash)
     $logger.info("Check of files in permision.json")
     json.each do |fileName, permision|
-      
-      wd=`stat --format=%F #{dirPath}#{fileName}`.chomp
-      if wd=="directory"
-        Dir.chdir("#{dirPath}#{fileName}")
-        ifIsPermisionOK("#{fileName}",permision,dirPath)
-        fileHash["#{fileName}"]= true
-        
-        Dir.glob("**/*").each do |f| 
-          ifIsPermisionOK("#{fileName}/#{f}",permision,dirPath)
-          fileHash["#{fileName}/#{f}"]= true
-        end
+      begin
+        wd=`stat --format=%F #{dirPath}#{fileName}`.chomp
+       rescue Exception=>e
+        $logger.fatal("external program thrown error")
+        $logger.fatal(e)
+        exit
       else
-        ifIsPermisionOK(fileName,permision,dirPath)
-        fileHash["#{fileName}"]= true
+        if wd=="directory"
+          Dir.chdir("#{dirPath}#{fileName}")
+          ifIsPermisionOK("#{fileName}",permision,dirPath)
+          fileHash["#{fileName}"]= true
+          
+          Dir.glob("**/*").each do |f| 
+            ifIsPermisionOK("#{fileName}/#{f}",permision,dirPath)
+            fileHash["#{fileName}/#{f}"]= true
+          end
+        else
+          ifIsPermisionOK(fileName,permision,dirPath)
+          fileHash["#{fileName}"]= true
+        end
       end
     end
-
     return fileHash 
   end # method checkFoldersPermisionFile
 
@@ -235,7 +264,7 @@ class Checker
         #otevreni souboru nastaveni
         file = File.open("#{dirPath}permisions.json", &:read)
       rescue Exception=>e
-        $logger.fatal(e)
+        $logger.fatal(e.message)
         $logger.warn("Skiping folder #{dirPath}")
       else
         json=JSON.parse(file)
