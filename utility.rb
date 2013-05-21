@@ -141,7 +141,7 @@ class Checker
         if wr==permission
           return true
         else
-          $logger.fatal("file #{dirPath}#{file} has #{wr} should be #{permission}")
+          $logger.warn("file #{dirPath}#{file} has #{wr} should be #{permission}")
           if @CHANGE_PERMISSION
             $logger.warn("Changing permission of file #{dirPath}#{file} from  #{wr}")
             begin
@@ -176,7 +176,7 @@ class Checker
       if wr==default_permission
         return true
       else
-        $logger.fatal("file #{dirPath}#{file} has #{wr} should be #{default_permission}")
+        $logger.warn("file #{dirPath}#{file} has #{wr} should be #{default_permission}")
         if @CHANGE_PERMISSION
           $logger.warn("Changing permission of file #{dirPath}#{file} from  #{wr} to #{default_permission}")
             begin
