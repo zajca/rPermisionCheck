@@ -208,11 +208,16 @@ class Checker
           ifIsPermisionOK("#{fileName}",permission,dirPath)
           fileHash["#{fileName}"]= true
           
-          Dir.glob("**/*").each do |f| 
-            ifIsPermisionOK("#{fileName}/#{f}",permission,dirPath)
-            fileHash["#{fileName}/#{f}"]= true
+          Dir.glob("**/*").each do |f|
+            if !fileHash["#{fileName}/#{f}"]
+              ifIsPermisionOK("#{fileName}/#{f}",permission,dirPath)
+              fileHash["#{fileName}/#{f}"]= true
+            end
           end
         else
+          $logger.info(fileName)
+          $logger.info(fileHash[fileName.to_s])
+          $logger.info(fileHash)
           if !fileHash[fileName]
             ifIsPermisionOK(fileName,permission,dirPath)
             fileHash["#{fileName}"]= true
