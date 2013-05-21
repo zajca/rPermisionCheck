@@ -5,3 +5,4 @@
 BUGS:
 --can't check permission for folder/file with blank space in name
 --can't handle unexisted files/folders declared in permission.json
+--don't check hiden files (.something)
